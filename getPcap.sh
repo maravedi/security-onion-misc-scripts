@@ -37,16 +37,19 @@ done
 pdate=`date -d "$2" +%Y-%m-%d`
 
 cd $int/dailylogs/$pdate
-rm /tmp/merged.pcap
+rm /tmp/merged.pcap 2> /dev/null
 
 # find all files created between the times of $2 and $3
 find . -newerct "$2 $3" ! -newerct "$2 $4" | xargs -I {} tcpdump -r {} -w /tmp/{} host $1
 # merge all pcaps
-mergecap -w /tmp/merged.pcap /tmp/snort*
+mergecap -w /tmp/merged.pcap /tmp/snort* 2> /dev/null
 # remove all pcaps used to created the merged pcap
-rm /tmp/snort.log*
-
-echo -e "\n\n*********************************************************************************************"
-echo -e "Merged PCAP is /tmp/merged.pcap"
-ls -l /tmp/merged.pcap
-echo -e "*********************************************************************************************\n\n"
+rm /tmp/snort.log* 2> /dev/null
+if [ ! -f /tmp/merged.pcap ]; then
+  echo -e "No data was found in sensor data that matched the input parameters"
+else
+  echo -e "\n\n*********************************************************************************************"
+  echo -e "Merged PCAP is /tmp/merged.pcap"
+  ls -l /tmp/merged.pcap
+  echo -e "*********************************************************************************************\n\n"
+fi
